@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sixbot Calendar</title>
+<style>
+  :root { --bg: #f4efeb; --card: #fff; --text: #0f0d0c; --muted: #4a4340; --accent: #c2410c; --line: #d9cfc8; }
+  /* Dark colors: follow the system, unless the switch picked a side */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #0b0a09; --card: #1c1917; --text: #ffffff; --muted: #d6cec9; --accent: #ff8a5c; --line: #4a4440; }
+  }
+  :root[data-theme="dark"] { --bg: #0b0a09; --card: #1c1917; --text: #ffffff; --muted: #d6cec9; --accent: #ff8a5c; --line: #4a4440; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.55 system-ui, -apple-system, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 16px 64px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  h1 { margin: 0; font-size: 28px; display: flex; align-items: center; gap: 10px; }
+  h1 img { display: block; }
+  h2 { margin: 40px 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .subscribe { color: var(--accent); font-weight: 600; text-decoration: none; }
+  /* "Upcoming" on the left, the .ics link on the right of the same row */
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 40px 0 12px; }
+  .section-head h2 { margin: 0; }
+  /* Light/dark switch: a checkbox drawn as a sliding track */
+  .theme { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); cursor: pointer; user-select: none; }
+  .theme input { appearance: none; margin: 0; width: 44px; height: 24px; border-radius: 12px; background: var(--line); position: relative; cursor: pointer; transition: background .2s; }
+  .theme input::before { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.35); transition: transform .2s; }
+  .theme input:checked { background: var(--accent); }
+  .theme input:checked::before { transform: translateX(20px); }
+  .theme input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .event { display: flex; gap: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+  .date { flex: 0 0 56px; text-align: center; color: var(--accent); }
+  .date span { display: block; font-size: 13px; text-transform: uppercase; font-weight: 600; }
+  .date strong { display: block; font-size: 26px; line-height: 1.1; }
+  .body { min-width: 0; }
+  h3 { margin: 0 0 4px; font-size: 18px; }
+  .body p { margin: 2px 0; overflow-wrap: anywhere; }
+  .when, .where { color: var(--muted); }
+  details { margin-top: 8px; color: var(--text); }
+  summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+  .links { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px !important; font-size: 14px; }
+  .links a { color: var(--accent); font-weight: 600; }
+  .links span { color: var(--muted); }
+  .past .event { opacity: .8; }
+  .empty { color: var(--muted); }
+</style>
+<script>
+  // Use the saved choice before the page draws, so it doesn't flash the wrong colors
+  try {
+    const saved = localStorage.getItem("theme");
+    if (saved) document.documentElement.dataset.theme = saved;
+  } catch {}
+</script>
+</head>
+<body>
+<main>
+  <header>
+    <h1><img src="sixbot.png" alt="" width="39" height="52"> sixbot Calendar</h1>
+    <label class="theme"><input type="checkbox" id="theme" role="switch"> Dark mode</label>
+  </header>
+  <div class="section-head">
+    <h2>Upcoming</h2>
+    <a class="subscribe" href="calendar.ics">Add to my calendar (.ics)</a>
+  </div>
+  
+    <article class="event">
+      <div class="date"><span>Oct</span><strong>27</strong></div>
+      <div class="body">
+        <h3>Across the Interview Table</h3>
+        <p class="when">Tue, Oct 27 · 6:00 PM–7:00 PM</p>
+        <p class="where">📍 Red Square, 370 Jay St, 4th Floor</p>
+        <details><summary>Details</summary><p>Ewen Syme (Senior Design Manager @ Nike) is coming to talk about interviews from the interviewer&#39;s side: what actually makes candidates stand out, and the small stuff that can make or break a loop.<br>🗓 Tue, Oct 27 · 6–7 PM<br>📍 Red Square, 370 Jay St, 4th Floor<br>RSVP: https://luma.com/1ao99jax</p></details>
+        <p class="links">
+          <a href="https://luma.com/1ao99jax" target="_blank" rel="noopener">RSVP / info</a>
+          <a href="https://discord.com/channels/1545510155662131290/1557414464314409020/1562330404000763914" target="_blank" rel="noopener">Discord message</a>
+          <span>added by sixbythree.</span>
+        </p>
+      </div>
+    </article>
+  <section class="past"><h2>Past</h2>
+    <article class="event">
+      <div class="date"><span>Oct</span><strong>9</strong></div>
+      <div class="body">
+        <h3>Hi folks! I’m organizing a tour of NYU IT LaGuardia Studio for ITP/IMA students</h3>
+        <p class="when">Fri, Oct 9 · 1:00 PM–2:00 PM</p>
+        
+        <details><summary>Details</summary><p>If you’re starting to think about semester projects and want to explore options beyond the floor/Makerspace, LaGuardia Studio supports things like full-color 3D printing, stainless steel printing, 3D scanning, different printing materials/processes, and design consultation. ITP/IMA students are also eligible for grant support.<br>There will be two tour sessions:<br>Fri, Oct 9, 1–2 PM<br>Mon, Oct 12, 1–2 PM<br>We’ll leave together from the floor at 12:30 PM for both.<br>Sign up here: https://forms.gle/M13P3UiyUY2AswNQ8<br>Come check out the space, see what equipment/services are available, and maybe get some ideas for your semester projects!<br>There are also some free giveaways prints at the end of the tour😛</p></details>
+        <p class="links">
+          <a href="https://forms.gle/M13P3UiyUY2AswNQ8" target="_blank" rel="noopener">RSVP / info</a>
+          <a href="https://discord.com/channels/1545510155662131290/1557414464314409020/1562331418733060236" target="_blank" rel="noopener">Discord message</a>
+          <span>added by sixbythree.</span>
+        </p>
+      </div>
+    </article></section>
+</main>
+<script>
+  // Start the switch on whichever mode is showing, then save each flip
+  const toggle = document.getElementById("theme");
+  const root = document.documentElement;
+  toggle.checked = root.dataset.theme
+    ? root.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  toggle.addEventListener("change", () => {
+    root.dataset.theme = toggle.checked ? "dark" : "light";
+    try {
+      localStorage.setItem("theme", root.dataset.theme);
+    } catch {}
+  });
+</script>
+</body>
+</html>

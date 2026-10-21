@@ -1,0 +1,38 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//sixbot//calendar//EN
+X-WR-CALNAME:sixbot Calendar
+BEGIN:VEVENT
+UID:1562331418733060236@sixbot
+DTSTAMP:20261021T055616Z
+DTSTART;TZID=America/New_York:20261009T130000
+DTEND;TZID=America/New_York:20261009T140000
+SUMMARY:Hi folks! I’m organizing a tour of NYU IT LaGuardia Studio for ITP
+ /IMA students
+URL:https://forms.gle/M13P3UiyUY2AswNQ8
+DESCRIPTION:If you’re starting to think about semester projects and want t
+ o explore options beyond the floor/Makerspace\, LaGuardia Studio supports
+  things like full-color 3D printing\, stainless steel printing\, 3D scann
+ ing\, different printing materials/processes\, and design consultation. I
+ TP/IMA students are also eligible for grant support.\nThere will be two t
+ our sessions:\nFri\, Oct 9\, 1–2 PM\nMon\, Oct 12\, 1–2 PM\nWe’ll leave t
+ ogether from the floor at 12:30 PM for both.\nSign up here: https://forms
+ .gle/M13P3UiyUY2AswNQ8\nCome check out the space\, see what equipment/ser
+ vices are available\, and maybe get some ideas for your semester projects
+ !\nThere are also some free giveaways prints at the end of the tour😛
+END:VEVENT
+BEGIN:VEVENT
+UID:1562330404000763914@sixbot
+DTSTAMP:20261021T055616Z
+DTSTART;TZID=America/New_York:20261027T180000
+DTEND;TZID=America/New_York:20261027T190000
+SUMMARY:Across the Interview Table
+LOCATION:Red Square\, 370 Jay St\, 4th Floor
+URL:https://luma.com/1ao99jax
+DESCRIPTION:Ewen Syme (Senior Design Manager @ Nike) is coming to talk abo
+ ut interviews from the interviewer's side: what actually makes candidates
+  stand out\, and the small stuff that can make or break a loop.\n🗓 Tue\,
+  Oct 27 · 6–7 PM\n📍 Red Square\, 370 Jay St\, 4th Floor\nRSVP: https://l
+ uma.com/1ao99jax
+END:VEVENT
+END:VCALENDAR
