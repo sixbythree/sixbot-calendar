@@ -29,11 +29,21 @@
   .orb.a { width: 50vmax; height: 50vmax; right: -16vmax; top: -18vmax; background: radial-gradient(circle, var(--purple), transparent 65%); }
   .orb.b { width: 36vmax; height: 36vmax; left: -14vmax; top: 55vh; background: radial-gradient(circle, var(--blue), transparent 65%); opacity: calc(var(--glow) * .6); }
 
-  main { max-width: 860px; margin: 0 auto; padding: 28px max(16px, 4vw) 80px; }
-  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; font: 500 12px/1.4 "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-  .top .bot { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  main { max-width: 860px; margin: 0 auto; padding: 0 max(16px, 4vw) 80px; }
+
+  /* Top bar sticks once you scroll; a small Calcache fades in as the big one collapses */
+  .bar { position: sticky; top: 0; z-index: 5; border-bottom: 1px solid transparent; transition: background-color .3s, border-color .3s; }
+  .bar.stuck { background: color-mix(in srgb, var(--bg) 78%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-color: var(--line); }
+  .top { max-width: 860px; margin: 0 auto; padding: 12px max(16px, 4vw); display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 500 12px/1.4 "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .top .bot { display: flex; align-items: center; gap: 10px; }
   .top img { width: 30px; height: 40px; object-fit: contain; }
-  .hero { padding: 72px 0 40px; }
+  .mini { margin-left: 6px; padding-left: 14px; border-left: 1px solid var(--line); font: 700 22px/1 "Space Grotesk", sans-serif; letter-spacing: -.03em; text-transform: none; color: var(--text); opacity: var(--mini, 0); translate: 0 calc((1 - var(--mini, 0)) * 10px); }
+  .mini b { color: var(--orange); }
+
+  /* --p goes 0 → 1 as the hero scrolls away */
+  .hero { padding: 56px 0 40px; }
+  .hero h1 { transform-origin: left bottom; scale: calc(1 - var(--p, 0) * .4); opacity: calc(1 - var(--p, 0) * 1.1); }
+  .hero .kicker, .hero .lede { opacity: calc(1 - var(--p, 0) * 1.8); translate: 0 calc(var(--p, 0) * -20px); }
   .kicker { margin: 0 0 18px; font: 500 12px/1.4 "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
   .kicker b { color: var(--blue); font-weight: 500; }
   h1 { margin: 0 0 20px; font: 700 clamp(56px, 11vw, 120px)/.95 "Space Grotesk", sans-serif; letter-spacing: -.045em; }
@@ -84,6 +94,7 @@
     .date { display: flex; align-items: baseline; gap: 10px; }
     .date strong { font-size: 34px; }
     .links span { margin-left: 0; }
+    .theme span { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { .event { animation: none; } }
 </style>
@@ -97,12 +108,14 @@
 </head>
 <body>
 <div class="fx" aria-hidden="true"><div class="grid" data-depth=".08"></div><div class="orb a" data-depth=".25"></div><div class="orb b" data-depth=".15"></div></div>
-<main>
+<div class="bar" id="bar">
   <div class="top">
-    <span class="bot"><img src="sixbot.png" alt="" width="30" height="40"> sixbot</span>
-    <label class="theme"><input type="checkbox" id="theme" role="switch"> Dark mode</label>
+    <span class="bot"><img src="sixbot.png" alt="" width="30" height="40"> sixbot<span class="mini" aria-hidden="true">Cal<b>cache</b></span></span>
+    <label class="theme"><input type="checkbox" id="theme" role="switch" aria-label="Dark mode"> <span>Dark mode</span></label>
   </div>
-  <header class="hero">
+</div>
+<main>
+  <header class="hero" id="hero">
     <p class="kicker">ITP events · <b>read from Discord</b></p>
     <h1>Cal<span>cache</span></h1>
     <p class="lede">Events sixbot pulled out of the A2Z Discord. Post one with <code>!event</code> and it shows up here.</p>
@@ -157,6 +170,21 @@
       localStorage.setItem("theme", root.dataset.theme);
     } catch {}
   });
+
+  // Collapse the hero as you scroll: --p for the big title, --mini for the small one in the bar
+  const hero = document.getElementById("hero");
+  const bar = document.getElementById("bar");
+  function collapse() {
+    // Finish collapsing by the end of the page, even when there are only a few events
+    const room = Math.min(hero.offsetHeight * 0.8, root.scrollHeight - innerHeight);
+    const p = room > 0 ? Math.min(1, Math.max(0, scrollY / room)) : 0;
+    root.style.setProperty("--p", p.toFixed(3));
+    root.style.setProperty("--mini", Math.max(0, (p - 0.55) / 0.45).toFixed(3));
+    bar.classList.toggle("stuck", scrollY > 8);
+  }
+  addEventListener("scroll", collapse, { passive: true });
+  addEventListener("resize", collapse);
+  collapse();
 
   // Parallax: the background layers move slower than the page
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
