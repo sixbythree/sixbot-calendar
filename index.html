@@ -4,46 +4,88 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>sixbot Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  :root { --bg: #f4efeb; --card: #fff; --text: #0f0d0c; --muted: #4a4340; --accent: #c2410c; --line: #d9cfc8; }
-  /* Dark colors: follow the system, unless the switch picked a side */
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --bg: #0b0a09; --card: #1c1917; --text: #ffffff; --muted: #d6cec9; --accent: #ff8a5c; --line: #4a4440; }
+  /* Dark is the main look; the switch turns on a light version */
+  :root {
+    --bg: #0a0a0c; --card: #16161b; --msg: #1f1f26; --text: #f4f2ef; --muted: rgb(244 242 239 / .62); --line: rgb(244 242 239 / .14);
+    --orange: #ff6b2c; --blue: #2de2ff; --purple: #5865f2; --lilac: #b3baff; --on-orange: #0a0a0c;
+    --glow: .35; color-scheme: dark;
   }
-  :root[data-theme="dark"] { --bg: #0b0a09; --card: #1c1917; --text: #ffffff; --muted: #d6cec9; --accent: #ff8a5c; --line: #4a4440; }
+  :root[data-theme="light"] {
+    --bg: #f4f2ef; --card: #ffffff; --msg: #ece9e4; --text: #0a0a0c; --muted: rgb(10 10 12 / .62); --line: rgb(10 10 12 / .12);
+    --orange: #e0551b; --blue: #0084a8; --purple: #5865f2; --lilac: #4752c4;
+    --glow: .18; color-scheme: light;
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.55 system-ui, -apple-system, sans-serif; }
-  main { max-width: 720px; margin: 0 auto; padding: 32px 16px 64px; }
-  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  h1 { margin: 0; font-size: 28px; display: flex; align-items: center; gap: 10px; }
-  h1 img { display: block; }
-  h2 { margin: 40px 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-  .subscribe { color: var(--accent); font-weight: 600; text-decoration: none; }
-  /* "Upcoming" on the left, the .ics link on the right of the same row */
-  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 40px 0 12px; }
-  .section-head h2 { margin: 0; }
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font: 17px/1.55 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+
+  /* Background: a faint grid and two glows that drift a little as you scroll */
+  .fx { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+  .grid { position: absolute; inset: -20%; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 64px 64px; mask-image: radial-gradient(ellipse at 60% 30%, #000 10%, transparent 65%); opacity: .5; }
+  .orb { position: absolute; border-radius: 50%; opacity: var(--glow); }
+  .orb.a { width: 50vmax; height: 50vmax; right: -16vmax; top: -18vmax; background: radial-gradient(circle, var(--purple), transparent 65%); }
+  .orb.b { width: 36vmax; height: 36vmax; left: -14vmax; top: 55vh; background: radial-gradient(circle, var(--blue), transparent 65%); opacity: calc(var(--glow) * .6); }
+
+  main { max-width: 860px; margin: 0 auto; padding: 28px max(16px, 4vw) 80px; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; font: 500 12px/1.4 "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .top .bot { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .top img { width: 30px; height: 40px; object-fit: contain; }
+  .hero { padding: 72px 0 40px; }
+  .kicker { margin: 0 0 18px; font: 500 12px/1.4 "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .kicker b { color: var(--blue); font-weight: 500; }
+  h1 { margin: 0 0 20px; font: 700 clamp(56px, 11vw, 120px)/.95 "Space Grotesk", sans-serif; letter-spacing: -.045em; }
+  h1 span { color: var(--orange); }
+  .lede { margin: 0; max-width: 30em; font-size: clamp(18px, 2vw, 22px); line-height: 1.45; color: var(--muted); }
+  .lede code { font: 500 .85em "JetBrains Mono", monospace; color: var(--blue); }
+
+  .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 48px 0 16px; padding-top: 18px; border-top: 1px solid var(--line); }
+  h2 { margin: 0; font: 500 12px/1.4 "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  h2 b { color: var(--text); font-weight: 500; margin-left: 6px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px; font: 500 15px "Space Grotesk", sans-serif; text-decoration: none; background: var(--orange); color: var(--on-orange); border: 1.5px solid var(--orange); transition: transform .2s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.ghost { background: none; color: var(--text); border-color: var(--purple); }
+
   /* Light/dark switch: a checkbox drawn as a sliding track */
-  .theme { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); cursor: pointer; user-select: none; }
+  .theme { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
   .theme input { appearance: none; margin: 0; width: 44px; height: 24px; border-radius: 12px; background: var(--line); position: relative; cursor: pointer; transition: background .2s; }
-  .theme input::before { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.35); transition: transform .2s; }
-  .theme input:checked { background: var(--accent); }
-  .theme input:checked::before { transform: translateX(20px); }
-  .theme input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .event { display: flex; gap: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
-  .date { flex: 0 0 56px; text-align: center; color: var(--accent); }
-  .date span { display: block; font-size: 13px; text-transform: uppercase; font-weight: 600; }
-  .date strong { display: block; font-size: 26px; line-height: 1.1; }
-  .body { min-width: 0; }
-  h3 { margin: 0 0 4px; font-size: 18px; }
-  .body p { margin: 2px 0; overflow-wrap: anywhere; }
-  .when, .where { color: var(--muted); }
-  details { margin-top: 8px; color: var(--text); }
-  summary { cursor: pointer; color: var(--accent); font-weight: 600; }
-  .links { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px !important; font-size: 14px; }
-  .links a { color: var(--accent); font-weight: 600; }
-  .links span { color: var(--muted); }
-  .past .event { opacity: .8; }
-  .empty { color: var(--muted); }
+  .theme input::before { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--text); transition: transform .2s; }
+  .theme input:checked { background: var(--purple); }
+  .theme input:checked::before { transform: translateX(20px); background: #fff; }
+
+  .event { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 20px; padding: 22px; margin-bottom: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; animation: rise .7s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i) * 90ms + 150ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(24px); } }
+  .date { padding-top: 2px; }
+  .date span { display: block; font: 500 12px "JetBrains Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--blue); }
+  .date strong { display: block; font: 700 46px/1 "Space Grotesk", sans-serif; letter-spacing: -.04em; }
+  h3 { margin: 0 0 12px; font: 500 clamp(20px, 2.4vw, 26px)/1.2 "Space Grotesk", sans-serif; letter-spacing: -.01em; overflow-wrap: anywhere; }
+  dl { margin: 0; }
+  dl div { display: grid; grid-template-columns: 4.5em minmax(0, 1fr); gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); }
+  dt { font: 500 11px/2 "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  dd { margin: 0; overflow-wrap: anywhere; }
+  .when dd { color: var(--orange); }
+  .where dd { color: var(--lilac); }
+  details { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+  summary { cursor: pointer; font: 500 12px/1.4 "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
+  details p { margin: 12px 0 0; padding: 16px 18px; border-radius: 12px; background: var(--msg); font-size: 15px; color: var(--muted); overflow-wrap: anywhere; }
+  .links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 16px 0 0; }
+  .links span { margin-left: auto; font: 400 12px "JetBrains Mono", monospace; color: var(--muted); }
+  .past .event { opacity: .55; }
+  .past .event:hover { opacity: 1; }
+  .empty { padding: 28px; border: 1px dashed var(--line); border-radius: 18px; color: var(--muted); }
+  .empty code { font-family: "JetBrains Mono", monospace; color: var(--blue); }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+  @media (max-width: 560px) {
+    .event { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 18px; }
+    .date { display: flex; align-items: baseline; gap: 10px; }
+    .date strong { font-size: 34px; }
+    .links span { margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .event { animation: none; } }
 </style>
 <script>
   // Use the saved choice before the page draws, so it doesn't flash the wrong colors
@@ -54,41 +96,51 @@
 </script>
 </head>
 <body>
+<div class="fx" aria-hidden="true"><div class="grid" data-depth=".08"></div><div class="orb a" data-depth=".25"></div><div class="orb b" data-depth=".15"></div></div>
 <main>
-  <header>
-    <h1><img src="sixbot.png" alt="" width="39" height="52"> sixbot Calendar</h1>
+  <div class="top">
+    <span class="bot"><img src="sixbot.png" alt="" width="30" height="40"> sixbot</span>
     <label class="theme"><input type="checkbox" id="theme" role="switch"> Dark mode</label>
+  </div>
+  <header class="hero">
+    <p class="kicker">ITP events · <b>read from Discord</b></p>
+    <h1>six<span>bot</span> calendar</h1>
+    <p class="lede">Events sixbot pulled out of the A2Z Discord. Post one with <code>!event</code> and it shows up here.</p>
   </header>
   <div class="section-head">
-    <h2>Upcoming</h2>
-    <a class="subscribe" href="calendar.ics">Add to my calendar (.ics)</a>
+    <h2>Upcoming<b>1</b></h2>
+    <a class="btn" href="calendar.ics">Add to my calendar (.ics)</a>
   </div>
   
-    <article class="event">
+    <article class="event" style="--i:0">
       <div class="date"><span>Oct</span><strong>27</strong></div>
       <div class="body">
         <h3>Across the Interview Table</h3>
-        <p class="when">Tue, Oct 27 · 6:00 PM–7:00 PM</p>
-        <p class="where">📍 Red Square, 370 Jay St, 4th Floor</p>
+        <dl>
+          <div class="when"><dt>Time</dt><dd>6:00 PM–7:00 PM</dd></div>
+          <div class="where"><dt>Place</dt><dd>Red Square, 370 Jay St, 4th Floor</dd></div>
+        </dl>
         <details><summary>Details</summary><p>Ewen Syme (Senior Design Manager @ Nike) is coming to talk about interviews from the interviewer&#39;s side: what actually makes candidates stand out, and the small stuff that can make or break a loop.<br>🗓 Tue, Oct 27 · 6–7 PM<br>📍 Red Square, 370 Jay St, 4th Floor<br>RSVP: https://luma.com/1ao99jax</p></details>
         <p class="links">
-          <a href="https://luma.com/1ao99jax" target="_blank" rel="noopener">RSVP / info</a>
-          <a href="https://discord.com/channels/1545510155662131290/1557414464314409020/1562330404000763914" target="_blank" rel="noopener">Discord message</a>
+          <a class="btn" href="https://luma.com/1ao99jax" target="_blank" rel="noopener">RSVP / info ↗</a>
+          <a class="btn ghost" href="https://discord.com/channels/1545510155662131290/1557414464314409020/1562330404000763914" target="_blank" rel="noopener">Discord message ↗</a>
           <span>added by sixbythree.</span>
         </p>
       </div>
     </article>
-  <section class="past"><h2>Past</h2>
-    <article class="event">
+  <section class="past"><div class="section-head"><h2>Past<b>1</b></h2></div>
+    <article class="event" style="--i:0">
       <div class="date"><span>Oct</span><strong>9</strong></div>
       <div class="body">
         <h3>Hi folks! I’m organizing a tour of NYU IT LaGuardia Studio for ITP/IMA students</h3>
-        <p class="when">Fri, Oct 9 · 1:00 PM–2:00 PM</p>
-        
+        <dl>
+          <div class="when"><dt>Time</dt><dd>1:00 PM–2:00 PM</dd></div>
+          
+        </dl>
         <details><summary>Details</summary><p>If you’re starting to think about semester projects and want to explore options beyond the floor/Makerspace, LaGuardia Studio supports things like full-color 3D printing, stainless steel printing, 3D scanning, different printing materials/processes, and design consultation. ITP/IMA students are also eligible for grant support.<br>There will be two tour sessions:<br>Fri, Oct 9, 1–2 PM<br>Mon, Oct 12, 1–2 PM<br>We’ll leave together from the floor at 12:30 PM for both.<br>Sign up here: https://forms.gle/M13P3UiyUY2AswNQ8<br>Come check out the space, see what equipment/services are available, and maybe get some ideas for your semester projects!<br>There are also some free giveaways prints at the end of the tour😛</p></details>
         <p class="links">
-          <a href="https://forms.gle/M13P3UiyUY2AswNQ8" target="_blank" rel="noopener">RSVP / info</a>
-          <a href="https://discord.com/channels/1545510155662131290/1557414464314409020/1562331418733060236" target="_blank" rel="noopener">Discord message</a>
+          <a class="btn" href="https://forms.gle/M13P3UiyUY2AswNQ8" target="_blank" rel="noopener">RSVP / info ↗</a>
+          <a class="btn ghost" href="https://discord.com/channels/1545510155662131290/1557414464314409020/1562331418733060236" target="_blank" rel="noopener">Discord message ↗</a>
           <span>added by sixbythree.</span>
         </p>
       </div>
@@ -98,15 +150,21 @@
   // Start the switch on whichever mode is showing, then save each flip
   const toggle = document.getElementById("theme");
   const root = document.documentElement;
-  toggle.checked = root.dataset.theme
-    ? root.dataset.theme === "dark"
-    : matchMedia("(prefers-color-scheme: dark)").matches;
+  toggle.checked = root.dataset.theme !== "light";
   toggle.addEventListener("change", () => {
     root.dataset.theme = toggle.checked ? "dark" : "light";
     try {
       localStorage.setItem("theme", root.dataset.theme);
     } catch {}
   });
+
+  // Parallax: the background layers move slower than the page
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const layers = document.querySelectorAll("[data-depth]");
+    addEventListener("scroll", () => {
+      layers.forEach((el) => { el.style.translate = "0 " + (-scrollY * el.dataset.depth).toFixed(1) + "px"; });
+    }, { passive: true });
+  }
 </script>
 </body>
 </html>
